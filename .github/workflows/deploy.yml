@@ -15,7 +15,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t nginx-github:latest .
+        docker build -t nginx-github:v1 .
 
     - name: Import image to k3s
       run: |
