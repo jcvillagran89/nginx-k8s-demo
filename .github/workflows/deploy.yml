@@ -20,7 +20,7 @@ jobs:
     - name: Import image to k3s
       run: |
         docker save nginx-github:latest -o nginx.tar
-        ctr -n k8s.io images import nginx.tar
+        sudo ctr -n k8s.io images import nginx.tar
 
     - name: Restart deployment
       run: |
