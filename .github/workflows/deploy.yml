@@ -1,4 +1,4 @@
-name: Deploy to Kubernetes
+name: Build and Deploy
 
 on:
   push:
@@ -10,17 +10,22 @@ jobs:
     runs-on: self-hosted
 
     steps:
-    - name: Checkout repository
+
+    - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Build Docker image
-      run: |
-        docker build -t nginx-github:v1 .
+    - name: Login to GHCR
+      run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-    - name: Import image to k3s
+    - name: Build image
       run: |
-        docker save nginx-github:v1 -o nginx.tar
-        sudo ctr -n k8s.io images import nginx.tar
-    - name: Restart deployment
+        docker build -t ghcr.io/${{ github.repository }}:latest .
+
+    - name: Push image
       run: |
-        kubectl rollout restart deployment nginx-github
+        docker push ghcr.io/${{ github.repository }}:latest
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl set image deployment/nginx-github nginx=ghcr.io/${{ github.repository }}:latest
+        kubectl rollout status deployment/nginx-github
