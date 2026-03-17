@@ -8,10 +8,16 @@ RUN apt-get update && apt-get install -y \
     libaio1t64 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copia archivos (ajusta si tienes app real)
+# Copia app
 COPY . /var/www/html
 
-# Exponer puerto
-EXPOSE 80
+# 🔥 Limpiar configs default de nginx
+RUN rm -rf /etc/nginx/sites-enabled/*
+RUN rm -rf /etc/nginx/sites-available/*
+RUN rm -rf /etc/nginx/conf.d/*
 
-CMD ["nginx", "-g", "daemon off;"]
+# 🔥 Agregar tu config correcta
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# 🔥 Levantar servicios
+CMD service nginx start && php-fpm
