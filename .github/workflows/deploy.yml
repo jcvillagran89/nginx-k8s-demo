@@ -5,22 +5,30 @@ on:
     branches: ['main']
 
 jobs:
-  build_push:
+  build-deploy:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Login GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build
-        run: docker build -t ghcr.io/jcvillagran89/nginx-k8s-demo:${{ github.sha }} .
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/jcvillagran89/nginx-k8s-demo:${{ github.sha }}
 
-      - name: Push
-        run: docker push ghcr.io/jcvillagran89/nginx-k8s-demo:${{ github.sha }}
-
-      - name: Deploy
+      - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/nginx-github \
           nginx=ghcr.io/jcvillagran89/nginx-k8s-demo:${{ github.sha }}
