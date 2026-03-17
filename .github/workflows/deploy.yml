@@ -26,5 +26,5 @@ jobs:
         docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
     - name: Deploy to Kubernetes
       run: |
-        kubectl set image deployment/nginx-github nginx=ghcr.io/${{ github.repository }}:latest
-        kubectl rollout status deployment/nginx-github
+        kubectl set image deployment/nginx-github \
+        nginx=ghcr.io/${{ github.repository }}:${{ github.sha }}
