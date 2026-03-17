@@ -30,5 +30,7 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
+          kubectl apply -f k8s/deployment.yaml
+                    
           kubectl set image deployment/nginx-github \
           nginx=ghcr.io/jcvillagran89/nginx-k8s-demo:${{ github.sha }}
