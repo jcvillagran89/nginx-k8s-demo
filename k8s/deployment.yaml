@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-github
+  labels:
+    app: nginx-github
 spec:
   replicas: 1
   selector:
