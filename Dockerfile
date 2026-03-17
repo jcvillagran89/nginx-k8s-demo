@@ -16,7 +16,7 @@ RUN rm -rf /etc/nginx/sites-enabled/*
 RUN rm -rf /etc/nginx/sites-available/*
 RUN rm -rf /etc/nginx/conf.d/*
 
-# Agregar tu config correcta
+#Agregar tu config correcta
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Levantar servicios
