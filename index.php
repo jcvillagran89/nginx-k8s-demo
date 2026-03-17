@@ -9,5 +9,8 @@ print_r(get_loaded_extensions());
 echo "<h3>Simulación Oracle:</h3>";
 echo getenv('LD_LIBRARY_PATH');
 
+echo "<h3>Deploy:</h3>";
+
 echo "<h3>Fecha:</h3>";
+
 echo date("Y-m-d H:i:s");
