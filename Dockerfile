@@ -81,7 +81,7 @@ RUN rm -rf /etc/nginx/sites-enabled/* \
     /etc/nginx/conf.d/*
 
 # 🔥 Config nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+#COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 🔥 Healthcheck básico
 HEALTHCHECK CMD curl -f http://localhost/ || exit 1
