@@ -22,6 +22,7 @@ RUN docker-php-ext-install pdo pdo_mysql zip
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # 🔥 ORACLE INSTANT CLIENT
+# Oracle Instant Client
 WORKDIR /opt/oracle
 
 RUN curl -L -o instantclient.zip \
