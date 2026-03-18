@@ -36,9 +36,11 @@ ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
 ENV PATH=$PATH:/opt/oracle/instantclient
 
 # 🔥 OCI8
-RUN pecl channel-update pecl.php.net && \
-    echo "instantclient,/opt/oracle/instantclient" | pecl install oci8-3.2.1 && \
-    docker-php-ext-enable oci8
+RUN pecl channel-update pecl.php.net
+
+RUN printf "instantclient,/opt/oracle/instantclient\n" | pecl install oci8
+
+RUN docker-php-ext-enable oci8
 
 # 🔥 App
 COPY . /var/www/html
