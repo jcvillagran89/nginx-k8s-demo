@@ -9,31 +9,52 @@ jobs:
     runs-on: self-hosted
 
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+      IMAGE_TAG: ${{ github.sha }}
+      DEPLOYMENT_NAME: nginx-github
+      CONTAINER_NAME: nginx
 
     steps:
+      # 📥 Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login to GHCR
+      # 🔐 Login al registry
+      - name: Login to Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
+      # 🐳 Build & Push con args + secrets
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64
           push: true
+          secrets: |
+            app_env=${{ secrets.APP_ENV }}
+          build-args: |
+            APP_ENV=${{ vars.APP_ENV }}
+            APP_NAME=${{ vars.APP_NAME }}
+            APP_DEBUG=${{ vars.APP_DEBUG }}
           tags: |
-            ghcr.io/jcvillagran89/nginx-k8s-demo:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
+      # ☸️ Deploy a Kubernetes
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/deployment.yaml
-                    
-          kubectl set image deployment/nginx-github \
-          nginx=ghcr.io/jcvillagran89/nginx-k8s-demo:${{ github.sha }}
+
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
+          ${{ env.CONTAINER_NAME }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
+
+      # 🔍 Validación
+      - name: Verify Pods
+        run: kubectl get pods
