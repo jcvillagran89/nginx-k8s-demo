@@ -5,32 +5,55 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     curl \
     unzip \
+    git \
     libaio1t64 \
+    libaio-dev \
+    build-essential \
+    autoconf \
+    pkg-config \
+    libzip-dev \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
+# 🔥 ORACLE INSTANT CLIENT (BASIC + SDK)
+WORKDIR /opt/oracle
 
-
-RUN curl -L -o instantclient.zip \
-    https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip \
+RUN curl -L -o basic.zip \
+    https://download.oracle.com/otn_software/linux/instantclient/219000/instantclient-basic-linux.x64-21.9.0.0.0dbru.zip \
     -H "Cookie: oraclelicense=accept-securebackup-cookie" && \
-    unzip instantclient.zip && \
-    rm instantclient.zip && \
-    ln -s /opt/oracle/instantclient_* /opt/oracle/instantclient
+    curl -L -o sdk.zip \
+    https://download.oracle.com/otn_software/linux/instantclient/219000/instantclient-sdk-linux.x64-21.9.0.0.0dbru.zip \
+    -H "Cookie: oraclelicense=accept-securebackup-cookie" && \
+    unzip basic.zip && \
+    unzip sdk.zip && \
+    rm basic.zip sdk.zip && \
+    ln -s /opt/oracle/instantclient_21_9 /opt/oracle/instantclient
 
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
 ENV PATH=$PATH:/opt/oracle/instantclient
-# Copia app
+
+# 🔥 OCI8 (forma estable)
+RUN printf "instantclient,/opt/oracle/instantclient\n" | pecl install oci8 \
+    && docker-php-ext-enable oci8
+
+# 🔥 EXTENSIONES PARA LARAVEL
+RUN docker-php-ext-install pdo pdo_mysql zip
+
+# 🔥 COMPOSER
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copia app (igual que ya lo tenías)
 COPY . /var/www/html
 
 # 🔥 Limpiar configs default de nginx
-RUN rm -rf /etc/nginx/sites-enabled/*
-RUN rm -rf /etc/nginx/sites-available/*
-RUN rm -rf /etc/nginx/conf.d/*
+RUN rm -rf /etc/nginx/sites-enabled/* \
+    /etc/nginx/sites-available/* \
+    /etc/nginx/conf.d/*
 
 # 🔥 Agregar tu config correcta
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 🔥 Levantar servicios
+# 🔥 NO se toca (porque ya funciona)
 CMD service nginx start && php-fpm
 
 
