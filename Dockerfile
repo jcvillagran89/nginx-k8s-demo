@@ -34,6 +34,11 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # App
 COPY . /var/www/html
+# 🔥 Limpiar configs default de nginx
+RUN rm -rf /etc/nginx/sites-enabled/*
+RUN rm -rf /etc/nginx/sites-available/*
+RUN rm -rf /etc/nginx/conf.d/*
+
 WORKDIR /var/www/html
 
 RUN chown -R www-data:www-data /var/www/html
