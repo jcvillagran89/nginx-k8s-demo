@@ -46,7 +46,7 @@ jobs:
       # ☸️ Deploy a Kubernetes
       - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f /u01/nginx-k8s/deployment.yaml
+          kubectl apply -f /u01/apps/nginx-k8s/deployment.yaml
 
           kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
           ${{ env.CONTAINER_NAME }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
