@@ -29,6 +29,8 @@ RUN curl -L -o basic.zip \
     rm basic.zip sdk.zip && \
     ln -s /opt/oracle/instantclient_21_9 /opt/oracle/instantclient
 
+RUN ln -s /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1
+
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
 ENV PATH=$PATH:/opt/oracle/instantclient
 
