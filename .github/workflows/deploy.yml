@@ -58,3 +58,4 @@ jobs:
       # 🔍 Validación
       - name: Verify Pods
         run: kubectl get pods
+        
