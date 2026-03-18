@@ -12,8 +12,12 @@ RUN apt-get update && apt-get install -y \
 
 # Oracle Instant Client
 WORKDIR /opt/oracle
-COPY instantclient-basiclite-linuxx64.zip .
-RUN unzip instantclient-basiclite-linuxx64.zip && \
+
+RUN curl -L -o instantclient.zip \
+    https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip \
+    -H "Cookie: oraclelicense=accept-securebackup-cookie" && \
+    unzip instantclient.zip && \
+    rm instantclient.zip && \
     ln -s /opt/oracle/instantclient_* /opt/oracle/instantclient
 
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
