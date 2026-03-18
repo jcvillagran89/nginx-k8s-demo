@@ -35,8 +35,6 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          secrets: |
-            app_env=${{ secrets.APP_ENV }}
           build-args: |
             APP_ENV=${{ vars.APP_ENV }}
             APP_NAME=${{ vars.APP_NAME }}
