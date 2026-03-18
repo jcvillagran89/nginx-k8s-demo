@@ -5,11 +5,21 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     curl \
     unzip \
+    git \
     libaio1t64 \
+    libaio-dev \
     build-essential \
     autoconf \
     pkg-config \
+    libzip-dev \
+    zip \
     && rm -rf /var/lib/apt/lists/*
+
+# 🔥 Extensiones PHP para Laravel
+RUN docker-php-ext-install pdo pdo_mysql zip
+
+# 🔥 Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # 🔥 ORACLE INSTANT CLIENT
 WORKDIR /opt/oracle
@@ -24,25 +34,25 @@ RUN curl -L -o instantclient.zip \
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
 ENV PATH=$PATH:/opt/oracle/instantclient
 
-# 🔥 INSTALAR OCI8
-RUN echo "instantclient,/opt/oracle/instantclient" | pecl install oci8 \
-    && docker-php-ext-enable oci8
+# 🔥 OCI8
+RUN pecl channel-update pecl.php.net && \
+    echo "instantclient,/opt/oracle/instantclient" | pecl install oci8-3.2.1 && \
+    docker-php-ext-enable oci8
 
-# App
+# 🔥 App
 COPY . /var/www/html
 
-# Limpiar configs nginx
+# 🔥 Permisos (Laravel los necesita)
+RUN chown -R www-data:www-data /var/www/html
+
+# 🔥 Limpiar nginx default
 RUN rm -rf /etc/nginx/sites-enabled/* \
     /etc/nginx/sites-available/* \
     /etc/nginx/conf.d/*
 
-# Config nginx
+# 🔥 Config nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Config supervisor
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-EXPOSE 80
-
-CMD ["/usr/bin/supervisord"]
+# 🔥 Mantener tu arranque funcional
+CMD service nginx start && php-fpm
 CMD ["/usr/bin/supervisord"]
