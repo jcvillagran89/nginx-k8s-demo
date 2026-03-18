@@ -1,23 +1,39 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm-bookworm
 
+# Instalar dependencias
 RUN apt-get update && apt-get install -y \
+    libaio-dev \
+    unzip \
     nginx \
     supervisor \
     curl \
-    unzip \
-    libaio1t64 \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copia app
-COPY . /var/www/html
+# Oracle Instant Client
+WORKDIR /opt/oracle
+COPY instantclient-basiclite-linuxx64.zip .
+RUN unzip instantclient-basiclite-linuxx64.zip && \
+    ln -s /opt/oracle/instantclient_* /opt/oracle/instantclient
 
-# Limpiar configs default de nginx
-RUN rm -rf /etc/nginx/sites-enabled/*
-RUN rm -rf /etc/nginx/sites-available/*
-RUN rm -rf /etc/nginx/conf.d/*
+ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
+ENV PATH=$PATH:/opt/oracle/instantclient
 
-#Agregar tu config correcta
+# PHP configs (para Laravel / apps reales)
+RUN docker-php-ext-install pdo pdo_mysql
+
+# Nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Levantar servicios
-CMD service nginx start && php-fpm
+# Supervisor
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# App
+COPY . /var/www/html
+WORKDIR /var/www/html
+
+RUN chown -R www-data:www-data /var/www/html
+
+EXPOSE 80
+
+CMD ["/usr/bin/supervisord"]
