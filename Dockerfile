@@ -25,6 +25,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Oracle Instant Client
 WORKDIR /opt/oracle
 
+# Oracle Instant Client
+WORKDIR /opt/oracle
+
 RUN curl -L -o instantclient.zip \
     https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip \
     -H "Cookie: oraclelicense=accept-securebackup-cookie" && \
@@ -34,13 +37,6 @@ RUN curl -L -o instantclient.zip \
 
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
 ENV PATH=$PATH:/opt/oracle/instantclient
-
-# 🔥 OCI8
-RUN pecl channel-update pecl.php.net
-
-RUN printf "instantclient,/opt/oracle/instantclient\n" | pecl install oci8
-
-RUN docker-php-ext-enable oci8
 
 # 🔥 App
 COPY . /var/www/html
