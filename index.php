@@ -14,4 +14,4 @@ echo "<h3>Deploy:</h3>";
 echo "<h3>Fecha:</h3>";
 
 echo date("Y-m-d H:i:s");
-echo "<h3>Deploy local ngnix 2:</h3>";
+echo "<h3>Deploy local ngnix 3:</h3>";
