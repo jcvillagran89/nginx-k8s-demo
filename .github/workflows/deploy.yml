@@ -20,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🔐 Login al registry
+      # Login al registry
       - name: Login to Registry
         uses: docker/login-action@v3
         with:
@@ -28,7 +28,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      # 🐳 Build & Push con args + secrets
+      # Build & Push con args + secrets
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
@@ -43,7 +43,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
-      # ☸️ Deploy a Kubernetes
+      # Deploy a Kubernetes
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f /u01/apps/nginx-k8s/deployment.yaml
@@ -53,7 +53,7 @@ jobs:
 
           kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
 
-      # 🔍 Validación
+      #  Validación
       - name: Verify Pods
         run: kubectl get pods
         
