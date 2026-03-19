@@ -1,6 +1,6 @@
 FROM php:8.2-fpm
 
-# 🔥 Paquetes base + dependencias Laravel + OCI8
+# Paquetes base + dependencias Laravel + OCI8
 RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# 🔥 Extensiones PHP necesarias para Laravel
+# Extensiones PHP necesarias para Laravel
 RUN docker-php-ext-configure gd --with-jpeg --with-freetype && \
     docker-php-ext-install \
     pdo \
@@ -34,7 +34,7 @@ RUN docker-php-ext-configure gd --with-jpeg --with-freetype && \
     intl \
     gd
 
-# 🔥 ORACLE INSTANT CLIENT (BASIC + SDK)
+# ORACLE INSTANT CLIENT (BASIC + SDK)
 WORKDIR /opt/oracle
 
 RUN curl -L -o basic.zip \
@@ -48,24 +48,24 @@ RUN curl -L -o basic.zip \
     rm basic.zip sdk.zip && \
     ln -s /opt/oracle/instantclient_21_9 /opt/oracle/instantclient
 
-# 🔥 Fix libaio (crítico para OCI8)
+# Fix libaio (crítico para OCI8)
 RUN ln -sf /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1
 
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
 ENV PATH=$PATH:/opt/oracle/instantclient
 
-# 🔥 OCI8
+# OCI8
 RUN printf "instantclient,/opt/oracle/instantclient\n" | pecl install oci8 \
     && docker-php-ext-enable oci8
 
-# 🔥 Composer
+#  Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# 🔥 App
+#  App
 WORKDIR /var/www/html
 COPY . /var/www/html
 
-# 🔥 Laravel: directorios necesarios
+#  Laravel: directorios necesarios
 RUN mkdir -p \
     storage/app \
     storage/framework/cache \
@@ -75,17 +75,17 @@ RUN mkdir -p \
     bootstrap/cache \
     && chown -R www-data:www-data /var/www/html
 
-# 🔥 Limpiar configs default de nginx
+# Limpiar configs default de nginx
 RUN rm -rf /etc/nginx/sites-enabled/* \
     /etc/nginx/sites-available/* \
     /etc/nginx/conf.d/*
 
-# 🔥 Config nginx
+#  Config nginx
 #COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 🔥 Healthcheck básico
+#  Healthcheck básico
 HEALTHCHECK CMD curl -f http://localhost/ || exit 1
 
-# 🔥 NO TOCAMOS ESTO (porque ya validaste que funciona)
+
 CMD service nginx start && php-fpm
 
