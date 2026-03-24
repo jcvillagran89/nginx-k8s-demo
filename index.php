@@ -115,7 +115,7 @@ button:disabled {
 <div class="container">
     <div class="card">
 
-        <div class="logo">HOLA MUNDO</div>
+        <div class="logo">HOLA MUNDO Local</div>
 
         <h2>Iniciar sesión</h2>
         <div class="subtitle">
