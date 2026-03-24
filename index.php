@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<title>DEMO</title>
 
 <style>
 body {
@@ -115,7 +115,7 @@ button:disabled {
 <div class="container">
     <div class="card">
 
-        <div class="logo">HOLA MUNDO Local</div>
+        <div class="logo">HOLA MUNDO RUNNER DEMO</div>
 
         <h2>Iniciar sesión</h2>
         <div class="subtitle">
