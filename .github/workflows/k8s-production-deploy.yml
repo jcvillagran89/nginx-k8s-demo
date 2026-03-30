@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   build_deploy:
-    if: github.repository == 'servicesgit-ccp/Laboratorio-de-Textil-PROD'
+#    if: github.repository == 'servicesgit-ccp/Laboratorio-de-Textil-PROD'
     runs-on: self-hosted
     env:
       REGISTRY: ccplabtxt:5000
