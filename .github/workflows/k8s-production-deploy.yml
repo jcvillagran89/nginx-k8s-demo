@@ -1,66 +1,57 @@
 name: build-and-deploy-k8s-production
 
 on:
-  push:
-    branches: ['main']
+push:
+branches: ['main']
 
 permissions:
-  contents: read
+contents: read
 
 concurrency:
-  group: production-k8s-main
-  cancel-in-progress: true
+group: production-k8s-main
+cancel-in-progress: true
 
 jobs:
-  build_deploy:
-#    if: github.repository == 'servicesgit-ccp/Laboratorio-de-Textil-PROD'
-    runs-on: self-hosted
-    env:
-      REGISTRY: 10.163.254.134:5000
-      IMAGE_NAME: laboratorio-textil
-      IMAGE_TAG: latest
-      DEPLOYMENT_NAME: production
-      CONTAINER_NAME: LaboratorioTextil
-      K8S_NAMESPACE: default
-      VITE_REVERB_APP_KEY: docker-app-key
+build_deploy:
+runs-on: self-hosted
 
-    steps:
-      - uses: actions/checkout@v4
+```
+env:
+  REGISTRY: 10.163.254.134:5000
+  IMAGE_NAME: laboratorio-textil
+  IMAGE_TAG: latest
+  DEPLOYMENT_NAME: production
+  CONTAINER_NAME: laboratorio-textil
+  K8S_NAMESPACE: default
+  VITE_REVERB_APP_KEY: docker-app-key
 
+steps:
+  - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  # 🔥 BUILD NORMAL (sin buildx)
+  - name: Build image
+    run: |
+      docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
 
-      - name: Build and push production image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          secrets: |
-            laravel_env=${{ secrets.LARAVEL_ENV_PROD }}
-          build-args: |
-            APP_BUILD_REF=${{ github.sha }}
-            LARAVEL_ENV_SHA=${{ steps.validate_env.outputs.env_sha }}
-            VITE_REVERB_APP_KEY=docker-app-key
-            VITE_REVERB_HOST=ccplabtxt.agarcia.com.mx
-            VITE_REVERB_PORT=443
-            VITE_REVERB_SCHEME=https
-            VITE_REVERB_CLUSTER=mt1
+  # 🔥 PUSH NORMAL (ya funciona con insecure registry)
+  - name: Push image
+    run: |
+      docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
 
-      - name: Deploy to Kubernetes
-        run: |
-          set -euo pipefail
-          namespace="${K8S_NAMESPACE:-default}"
+  # 🚀 DEPLOY
+  - name: Deploy to Kubernetes
+    run: |
+      set -euo pipefail
+      namespace="${K8S_NAMESPACE:-default}"
 
-          kubectl -n "${namespace}" set image deployment/"${DEPLOYMENT_NAME}" \
-            "${CONTAINER_NAME}"="${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+      kubectl -n "${namespace}" set image deployment/"${DEPLOYMENT_NAME}" \
+        "${CONTAINER_NAME}"="${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
 
-          kubectl -n "${namespace}" rollout status deployment/"${DEPLOYMENT_NAME}" --timeout=300s
+      kubectl -n "${namespace}" rollout status deployment/"${DEPLOYMENT_NAME}" --timeout=300s
 
-      - name: Verify Pods
-        run: |
-          namespace="${K8S_NAMESPACE:-default}"
-          kubectl -n "${namespace}" get pods
+  - name: Verify Pods
+    run: |
+      namespace="${K8S_NAMESPACE:-default}"
+      kubectl -n "${namespace}" get pods -o wide
+```
+
