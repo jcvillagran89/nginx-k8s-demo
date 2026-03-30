@@ -19,7 +19,7 @@ jobs:
       IMAGE_NAME: laboratorio-textil
       IMAGE_TAG: latest
       DEPLOYMENT_NAME: production
-      CONTAINER_NAME: LaboratorioTextil
+      CONTAINER_NAME: laboratorio-textil
       K8S_NAMESPACE: default
 
 
