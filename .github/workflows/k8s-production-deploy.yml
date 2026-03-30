@@ -28,7 +28,8 @@ jobs:
       
       - name: Create buildkit config 
         run: | 
-          mkdir -p /tmp/buildkit cat <<EOF > /tmp/buildkit/buildkitd.toml 
+          mkdir -p /tmp/buildkit 
+          cat <<EOF > /tmp/buildkit/buildkitd.toml 
           [registry."10.163.254.134:5000"] 
             http = true 
             insecure = true 
