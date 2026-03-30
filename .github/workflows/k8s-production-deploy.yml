@@ -15,7 +15,6 @@ jobs:
 build_deploy:
 runs-on: self-hosted
 
-```
 env:
   REGISTRY: 10.163.254.134:5000
   IMAGE_NAME: laboratorio-textil
@@ -52,6 +51,5 @@ steps:
   - name: Verify Pods
     run: |
       namespace="${K8S_NAMESPACE:-default}"
-      kubectl -n "${namespace}" get pods -o wide
-```
+      kubectl -n "${namespace}" get pods -o wide``
 
