@@ -16,17 +16,14 @@ jobs:
 #    if: github.repository == 'servicesgit-ccp/Laboratorio-de-Textil-PROD'
     runs-on: self-hosted
     env:
-      REGISTRY: ccplabtxt:5000
+      REGISTRY: ccplabtxt.agarcia.com.mx:5000
       IMAGE_NAME: laboratorio-textil
       IMAGE_TAG: latest
       DEPLOYMENT_NAME: production
       CONTAINER_NAME: LaboratorioTextil
       K8S_NAMESPACE: default
       VITE_REVERB_APP_KEY: docker-app-key
-      VITE_REVERB_HOST: ccplabtxt.agarcia.com.mx
-      VITE_REVERB_PORT: 443
-      VITE_REVERB_SCHEME: https
-      VITE_REVERB_CLUSTER: mt1
+
     steps:
       - uses: actions/checkout@v4
 
