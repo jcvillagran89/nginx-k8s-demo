@@ -16,7 +16,7 @@ jobs:
 #    if: github.repository == 'servicesgit-ccp/Laboratorio-de-Textil-PROD'
     runs-on: self-hosted
     env:
-      REGISTRY: ccplabtxt.agarcia.com.mx:5000
+      REGISTRY: 10.163.254.134:5000
       IMAGE_NAME: laboratorio-textil
       IMAGE_TAG: latest
       DEPLOYMENT_NAME: production
