@@ -119,6 +119,8 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Copy application files
 WORKDIR /var/www/html
 COPY . /var/www/html
+RUN echo "APP_KEY=base64:testkey123" > /tmp/laravel.env && \
+    echo "DB_CONNECTION=mysql" >> /tmp/laravel.env
 RUN --mount=type=secret,id=laravel_env,target=/tmp/laravel.env \
     echo "Skipping env validation"; \
     tr -d '\r' < /tmp/laravel.env > /var/www/html/.env; \
