@@ -1,42 +1,40 @@
----
 name: build-and-deploy-k8s-production
+
 on:
   push:
-    branches:
-      - main
+    branches: ['main']
+
 permissions:
   contents: read
-concurrency: null
-group: production-k8s-main
-cancel-in-progress: true
-jobs: null
-build_deploy: null
-runs-on: self-hosted
-env:
-  REGISTRY: 10.163.254.134:5000
-  IMAGE_NAME: laboratorio-textil
-  IMAGE_TAG: latest
-  DEPLOYMENT_NAME: production
-  CONTAINER_NAME: laboratorio-textil
-  K8S_NAMESPACE: default
-steps:
-  - name: Checkout
-    uses: actions/checkout@v4
-  - name: Build image
-    run: |
-      docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
-  - name: Push image
-    run: |
-      docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+
+jobs:
+  build_deploy:
+     runs-on: self-hosted
+     env:
+       REGISTRY: 10.163.254.134:5000
+       IMAGE_NAME: laboratorio-textil
+       IMAGE_TAG: latest
+       DEPLOYMENT_NAME: production
+       CONTAINER_NAME: laboratorio-textil
+       K8S_NAMESPACE: default
+     steps:
+       - name: Checkout
+         uses: actions/checkout@v4
+       - name: Build image
+     run: |
+         docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
+
+       - name: Push image
+      run: |
+      docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+
   - name: Deploy to Kubernetes
-    run: >
-      namespace="${K8S_NAMESPACE:-default}"
-
-
-      kubectl -n "${namespace}" set image deployment/${DEPLOYMENT_NAME} \
+    run: |
+      kubectl -n ${K8S_NAMESPACE} set image deployment/${DEPLOYMENT_NAME} \
         ${CONTAINER_NAME}=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
 
-      kubectl -n "${namespace}" rollout status deployment/${DEPLOYMENT_NAME} --timeout=300s
+      kubectl -n ${K8S_NAMESPACE} rollout status deployment/${DEPLOYMENT_NAME} --timeout=300s
+
   - name: Verify Pods
     run: |
-      kubectl -n "${K8S_NAMESPACE:-default}" get pods -o wide
+      kubectl -n ${K8S_NAMESPACE} get pods -o wide
