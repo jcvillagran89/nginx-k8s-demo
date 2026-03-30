@@ -15,7 +15,7 @@ jobs:
   build_deploy:
     runs-on: self-hosted
     env:
-      REGISTRY: ccplabtxt:5000
+      REGISTRY: localhost:5000
       IMAGE_NAME: laboratorio-textil
       IMAGE_TAG: latest
       DEPLOYMENT_NAME: production
