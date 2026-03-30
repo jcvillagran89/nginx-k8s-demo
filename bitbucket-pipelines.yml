@@ -1,0 +1,28 @@
+image: node:18-bullseye
+
+options:
+  docker: true
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Build and Deploy Lambda
+          size: 2x
+          services:
+            - docker
+          script:
+            - apt-get update && apt-get install -y awscli
+            - export NODE_OPTIONS=--max_old_space_size=4096
+            - export VITE_REVERB_APP_KEY="${VITE_REVERB_APP_KEY:-local-app-key}"
+            - export VITE_REVERB_HOST="${VITE_REVERB_HOST:-localhost}"
+            - export VITE_REVERB_PORT="${VITE_REVERB_PORT:-6001}"
+            - export VITE_REVERB_SCHEME="${VITE_REVERB_SCHEME:-http}"
+            - export VITE_REVERB_CLUSTER="${VITE_REVERB_CLUSTER:-mt1}"
+            - IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:${BITBUCKET_COMMIT}"
+            - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+            - npm ci
+            - npm run build
+            - docker build -f Dockerfile.lambda -t "$IMAGE_URI" .
+            - docker push "$IMAGE_URI"
+            - aws lambda update-function-code --region "$AWS_REGION" --function-name "$LAMBDA_FUNCTION_NAME" --image-uri "$IMAGE_URI"

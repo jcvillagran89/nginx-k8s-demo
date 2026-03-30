@@ -1,0 +1,105 @@
+## PHP 8.2 + Lambda Web Adapter (HTTP via Function URL)
+
+# Stage 1: composer dependencies (PHP 8.2)
+FROM php:8.2-cli AS composer_builder
+WORKDIR /app
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libzip-dev; \
+    docker-php-ext-configure gd --with-jpeg --with-freetype; \
+    docker-php-ext-install gd zip; \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \
+    rm -rf /var/lib/apt/lists/*
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader --ignore-platform-req=ext-oci8 --no-scripts
+
+# Stage 3: final Lambda image
+FROM php:8.2-cli
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV AWS_LAMBDA_EXEC_WRAPPER=/opt/bootstrap
+ENV PORT=8080
+ENV APP_SERVICES_CACHE=/tmp/cache/services.php
+ENV APP_PACKAGES_CACHE=/tmp/cache/packages.php
+ENV APP_CONFIG_CACHE=/tmp/cache/config.php
+ENV APP_ROUTES_CACHE=/tmp/cache/routes-v7.php
+ENV APP_EVENTS_CACHE=/tmp/cache/events.php
+ENV LARAVEL_STORAGE_PATH=/tmp/storage
+
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    unzip \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libzip-dev \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libicu-dev \
+    zip; \
+    if ! apt-get install -y --no-install-recommends libaio1; then \
+    apt-get install -y --no-install-recommends libaio1t64; \
+    fi; \
+    docker-php-ext-configure gd --with-jpeg --with-freetype; \
+    docker-php-ext-install pdo pdo_mysql zip exif pcntl bcmath intl gd; \
+    for libdir in /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu; do \
+    if [ -f "$libdir/libaio.so.1t64" ] && [ ! -e "$libdir/libaio.so.1" ]; then \
+    ln -s libaio.so.1t64 "$libdir/libaio.so.1"; \
+    fi; \
+    done; \
+    rm -rf /var/lib/apt/lists/*
+
+COPY docker/instantclient/ /tmp/instantclient/
+
+RUN set -eux; \
+    if ls /tmp/instantclient/*.zip >/dev/null 2>&1; then \
+        arch="$(uname -m)"; \
+        case "$arch" in \
+            aarch64) ic_pattern="*linux.arm64*.zip" ;; \
+            x86_64) ic_pattern="*linux.x64*.zip" ;; \
+            *) echo "Unsupported architecture: $arch" >&2; exit 1 ;; \
+        esac; \
+        if ! ls /tmp/instantclient/${ic_pattern} >/dev/null 2>&1; then \
+            echo "Missing Oracle Instant Client archives matching ${ic_pattern}." >&2; \
+            exit 1; \
+        fi; \
+        apt-get update && apt-get install -y --no-install-recommends libaio-dev libnsl-dev build-essential pkg-config unzip; \
+        for f in /tmp/instantclient/${ic_pattern}; do unzip -qn "$f" -d /opt; done; \
+        INSTDIR=$(ls -d /opt/instantclient_* | head -n1); \
+        echo "$INSTDIR" > /etc/ld.so.conf.d/oracle-instantclient.conf; ldconfig; \
+        printf "instantclient,%s\n" "$INSTDIR" | pecl install oci8-3.0.1; \
+        docker-php-ext-enable oci8; \
+    else \
+        echo 'No Oracle Instant Client zip files found in docker/instantclient/' >&2; \
+        exit 1; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer_builder /app/vendor /var/task/vendor
+COPY --from=composer_builder /usr/local/bin/composer /usr/bin/composer
+
+WORKDIR /var/task
+COPY . /var/task
+RUN rm -f bootstrap/cache/*.php
+
+RUN set -eux; \
+    mkdir -p storage/app storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache; \
+    chown -R www-data:www-data /var/task/storage /var/task/bootstrap/cache /var/task/vendor || true;
+
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.1 /lambda-adapter /opt/extensions/lambda-adapter
+
+COPY docker/docker-entrypoint-lambda.sh /usr/local/bin/docker-entrypoint-lambda.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-lambda.sh
+
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-lambda.sh"]

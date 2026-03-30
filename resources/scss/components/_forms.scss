@@ -1,0 +1,170 @@
+//
+// forms.scss
+//
+
+// Form elements (Color and Range)
+
+input.form-control[type='color'],
+input.form-control[type='range'] {
+    min-height: 39px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+html[data-textile-lab] {
+    .lab-input-shell {
+        transition: box-shadow 0.2s ease;
+
+        &:focus-within {
+            box-shadow: 0 0 0 1px rgba(var(--#{$prefix}primary-rgb), 1),
+                0 0 0 0.2rem rgba(var(--#{$prefix}primary-rgb), 0.25);
+        }
+    }
+
+    .form-control,
+    .form-select,
+    textarea,
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']) {
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    textarea:focus,
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):focus {
+        border-color: var(--#{$prefix}primary);
+        box-shadow: 0 0 0 0.2rem rgba(var(--#{$prefix}primary-rgb), 0.25);
+        outline: 0;
+    }
+
+    .lab-input-shell .form-control:focus,
+    .lab-input-shell .form-select:focus,
+    .lab-input-shell textarea:focus,
+    .lab-input-shell input:focus {
+        box-shadow: none;
+    }
+}
+
+// Custom select
+
+.custom-select.is-invalid,
+.form-control.is-invalid,
+.custom-select:invalid,
+.form-control:invalid,
+.custom-select.is-valid,
+.form-control.is-valid,
+.custom-select:valid,
+.form-control:valid {
+    &:focus {
+        box-shadow: none !important;
+    }
+}
+
+select.form-control {
+    &:not([size]):not([multiple]) {
+        height: $input-height;
+    }
+}
+
+select.form-control-sm {
+    &:not([size]):not([multiple]) {
+        height: $input-height-sm;
+    }
+}
+
+// Show/Hide Password
+.password-eye {
+    cursor: pointer;
+
+    &:before {
+        font-family: tabler-icons;
+        content: '\ea9a';
+        font-style: normal;
+        font-weight: 400;
+        font-variant: normal;
+        vertical-align: middle;
+        line-height: 1.2;
+        font-size: 16px;
+    }
+}
+
+.show-password {
+    .password-eye {
+        &:before {
+            content: '\F06D1';
+        }
+    }
+}
+
+//
+// custom-forms.scss
+//
+
+@each $state in map-keys($theme-colors) {
+    .form-checkbox-#{$state},
+    .form-radio-#{$state} {
+        .form-check-input {
+            &:checked {
+                background-color: var(--#{$prefix}#{$state});
+                border-color: var(--#{$prefix}#{$state});
+            }
+        }
+    }
+}
+
+// card radio
+.card-radio {
+    padding: 0;
+
+    .form-check-label {
+        background-color: $card-bg;
+        border: 1px solid var(--#{$prefix}border-color);
+        border-radius: $border-radius;
+        padding: 1rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+        position: relative;
+        padding-right: 32px;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    .check-icon svg {
+        display: none;
+    }
+
+    .form-check-input {
+        display: none;
+
+        &:checked + .form-check-label {
+            & .check-icon svg {
+                // content: "\f704";
+                // font-family: tabler-icons;
+                display: block;
+                position: absolute;
+                bottom: 6px;
+                right: 6px;
+                font-size: 16px;
+                color: var(--#{$prefix}primary);
+            }
+        }
+    }
+
+    &.dark {
+        .form-check-input {
+            &:checked + .form-check-label {
+                &:before {
+                    color: $white;
+                }
+            }
+        }
+    }
+}
